@@ -6,6 +6,7 @@
 **![image](https://github.com/user-attachments/assets/1d50fe96-3163-4b5e-a8eb-7ec4c0886cbe)
 **![image](https://github.com/user-attachments/assets/f8bb177c-1590-4256-b786-88373e47b50c)
 **![image](https://github.com/user-attachments/assets/762f447f-69ef-4cbf-95eb-75759613c0fc)
+**![image](https://github.com/user-attachments/assets/691b2b20-59e6-47c0-9596-6542a2778e4f)
 
 This project involves scraping financial data from various sources and performing sentiment analysis on BBC financial news headlines. The sentiment analysis results are then visualized using a Red-Amber-Green (RAG) status indicator. The project also includes machine learning models to predict the sentiment of headlines.
 
