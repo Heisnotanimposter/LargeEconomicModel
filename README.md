@@ -2,6 +2,9 @@
 # RAG Visualizer and BBC Financial News Crawler
 
 ## Overview
+https://largeeconomicmodel-twxfx5skyfi4svtasud35f.streamlit.app/
+
+
 **![image](https://github.com/user-attachments/assets/9d352cb7-7036-44ff-8f3e-e7f343fce2e9)
 **![image](https://github.com/user-attachments/assets/1d50fe96-3163-4b5e-a8eb-7ec4c0886cbe)
 **![image](https://github.com/user-attachments/assets/f8bb177c-1590-4256-b786-88373e47b50c)
