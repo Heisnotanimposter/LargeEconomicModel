@@ -200,6 +200,7 @@ else:
         voting_model.fit(X_train, y_train)
         voting_pred = voting_model.predict(X_test)
 
+
         # Evaluate the voting model
         voting_accuracy = accuracy_score(y_test, voting_pred)
         voting_report = classification_report(y_test, voting_pred, output_dict=True)
@@ -254,7 +255,7 @@ else:
         st.write("Thank you for using the Economic Data Analysis and Sentiment Analysis tool!")
 
         # Provide download options for the data
-        @st.cache
+        @st.cache_data
         def convert_df(df):
             return df.to_csv(index=False).encode('utf-8')
 
