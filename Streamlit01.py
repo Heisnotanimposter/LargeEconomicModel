@@ -163,8 +163,11 @@ else:
     if X.empty or y.empty:
         st.warning("Features or target variable is empty. Exiting the script.")
     else:
+        st.write(news_df['Sentiment'].value_counts())
+
         # Split the data into training and testing sets
-        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42, stratify=y)
+        st.write(pd.Series(y_train).value_counts())
 
         # Initialize and train the logistic regression model
         model = LogisticRegression()
@@ -258,15 +261,15 @@ else:
 
         if avg_fear_index >= 7:
             st.write("Current Market Sentiment: High Fear")
-            display_icon(r"C:\Users\redca\Documents\GitHub\LargeEconomicModel\bear_icon.PNG", width=100)  # Ensure this file exists in your directory
+            display_icon(r"C:\\Users\\redca\\Documents\\GitHub\\LargeEconomicModel\\bear_icon.PNG", width=100)  # Ensure this file exists in your directory
         elif avg_fear_index >= 4:
             st.write("Current Market Sentiment: Moderate Fear")
-            display_icon(r"C:\Users\redca\Documents\GitHub\LargeEconomicModel\bear_icon.PNG", width=100)
+            display_icon(r"C:\\Users\\redca\\Documents\\GitHub\\LargeEconomicModel\\bear_icon.PNG", width=100)
         elif avg_fear_index >= 2:
             st.write("Current Market Sentiment: Neutral")
         else:
             st.write("Current Market Sentiment: Greed")
-            display_icon(r"C:\Users\redca\Documents\GitHub\LargeEconomicModel\eagle_icon.PNG", width=100)  # Ensure this file exists in your directory
+            display_icon(r"C:\\Users\\redca\\Documents\\GitHub\\LargeEconomicModel\\eagle_icon.PNG", width=100)  # Ensure this file exists in your directory
 
         # Add interactive components for better user experience
         st.sidebar.header('User Input Features')
@@ -301,7 +304,3 @@ else:
             file_name='news_sentiment_analysis.csv',
             mime='text/csv',
         )
-
-# Run the app
-if __name__ == "__main__":
-    main()
