@@ -5,7 +5,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 import plotly.express as px
-from mpl_toolkits.mplot3d import Axes3D
+import plotly.graph_objects as go
 from textblob import TextBlob
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LogisticRegression
@@ -15,13 +15,32 @@ import xml.etree.ElementTree as ET
 import base64
 
 # Page Configuration
-st.set_page_config(page_title="Economic News Analysis", layout="wide")
+st.set_page_config(page_title="Economic News & Sentiment Analysis", layout="wide", initial_sidebar_state="expanded")
 
-# Helper function to display images in Streamlit
+# Custom CSS for enhancing visuals
+st.markdown("""
+    <style>
+    .main {
+        background-color: #f4f4f4;
+    }
+    .sidebar .sidebar-content {
+        background-color: #fafafa;
+    }
+    .st-dp {
+        border-radius: 10px;
+        padding: 15px;
+    }
+    </style>
+""", unsafe_allow_html=True)
+
+# Helper function to display images
 def display_icon(icon_path, width=50):
-    with open(icon_path, "rb") as image_file:
-        encoded_string = base64.b64encode(image_file.read()).decode()
-        st.markdown(f'<img src="data:image/PNG;base64,{encoded_string}" width="{width}">', unsafe_allow_html=True)
+    try:
+        with open(icon_path, "rb") as image_file:
+            encoded_string = base64.b64encode(image_file.read()).decode()
+            st.markdown(f'<img src="data:image/png;base64,{encoded_string}" width="{width}">', unsafe_allow_html=True)
+    except FileNotFoundError:
+        st.error(f"Icon not found at: {icon_path}")
 
 # Function to fetch economic data with error handling
 def fetch_economic_data(url, table_class):
@@ -61,18 +80,21 @@ urls = {
 # Table class used on TradingEconomics website
 table_class = "table table-hover table-heatmap"
 
-st.title("Economic Data Analysis and Sentiment Analysis")
+# Title and description
+st.title("🌐 Economic Data & Sentiment Analysis")
+st.markdown("Analyze the economic indicators and sentiment analysis from BBC News with AI-powered models.")
 
 # Fetch data for each economic indicator
-economic_data = {}
-for indicator, url in urls.items():
-    df = fetch_economic_data(url, table_class)
+st.sidebar.subheader("Select Economic Indicator to Display")
+selected_indicator = st.sidebar.selectbox("Choose an Indicator", list(urls.keys()))
+
+if selected_indicator:
+    df = fetch_economic_data(urls[selected_indicator], table_class)
     if df is not None:
-        economic_data[indicator] = df
-        st.write(f"Data for {indicator} successfully scraped!")
+        st.subheader(f"📊 {selected_indicator} Data")
         st.write(df.head())
     else:
-        st.write(f"Failed to scrape data for {indicator}")
+        st.write(f"Failed to scrape data for {selected_indicator}")
 
 # Function to scrape BBC business news and perform sentiment analysis with error handling
 def scrape_bbc_business_news_rss():
@@ -106,7 +128,7 @@ def scrape_bbc_business_news_rss():
         st.error(f"Error parsing BBC news feed: {e}")
         return pd.DataFrame()
 
-# Function to calculate fear index
+# Sentiment and fear index calculations
 def calculate_fear_index(polarity, subjectivity):
     if polarity < -0.3 and subjectivity > 0.5:
         return 10  # High fear
@@ -120,49 +142,35 @@ def calculate_fear_index(polarity, subjectivity):
 # Scrape news headlines and perform sentiment analysis
 news_df = scrape_bbc_business_news_rss()
 
-# Check if the dataset is empty before proceeding
-if news_df.empty:
-    st.warning("The dataset is empty. Exiting the script.")
-else:
+if not news_df.empty:
     st.write(news_df.head())
 
     # Visualize sentiment polarity distribution
-    fig = px.histogram(news_df, x='Polarity', nbins=20, title='Sentiment Polarity Distribution')
+    fig = px.histogram(news_df, x='Polarity', nbins=20, title='Sentiment Polarity Distribution', template='plotly_dark')
     st.plotly_chart(fig)
 
     # Create a binary target variable
     news_df['Sentiment'] = news_df['Polarity'].apply(lambda x: 1 if x >= 0 else 0)
 
     # Create a RAG status based on sentiment polarity
-    def classify_sentiment(polarity):
-        if polarity > 0.1:
-            return 'Green'  # Positive sentiment
-        elif polarity < -0.1:
-            return 'Red'    # Negative sentiment
-        else:
-            return 'Amber'  # Neutral sentiment
+    news_df['RAG_Status'] = news_df['Polarity'].apply(lambda x: 'Green' if x > 0.1 else 'Red' if x < -0.1 else 'Amber')
 
-    news_df['RAG_Status'] = news_df['Polarity'].apply(classify_sentiment)
-    
     # Calculate the fear index
     news_df['Fear_Index'] = news_df.apply(lambda row: calculate_fear_index(row['Polarity'], row['Subjectivity']), axis=1)
 
     # Visualize RAG status distribution
-    fig = px.histogram(news_df, x='RAG_Status', color='RAG_Status', title='RAG Status Distribution')
+    fig = px.histogram(news_df, x='RAG_Status', color='RAG_Status', title='RAG Status Distribution', template='plotly_dark')
     st.plotly_chart(fig)
 
     # Visualize Fear Index distribution
-    fig = px.histogram(news_df, x='Fear_Index', nbins=10, title='Fear Index Distribution')
+    fig = px.histogram(news_df, x='Fear_Index', nbins=10, title='Fear Index Distribution', template='plotly_dark')
     st.plotly_chart(fig)
 
     # Prepare features and target variable for machine learning
     X = news_df[['Polarity', 'Subjectivity', 'Fear_Index']]
     y = news_df['Sentiment']
 
-    # Ensure we have data before proceeding
-    if X.empty or y.empty:
-        st.warning("Features or target variable is empty. Exiting the script.")
-    else:
+    if not X.empty and not y.empty:
         st.write(news_df['Sentiment'].value_counts())
 
         # Split the data into training and testing sets
@@ -178,129 +186,16 @@ else:
 
         # Evaluate the model
         accuracy = accuracy_score(y_test, y_pred)
-        report = classification_report(y_test, y_pred, output_dict=True)
-
         st.write(f'Logistic Regression Accuracy: {accuracy}')
-        st.write(pd.DataFrame(report).transpose())
 
-        # Plot confusion matrix
-        conf_matrix = confusion_matrix(y_test, y_pred)
-        fig, ax = plt.subplots()
-        sns.heatmap(conf_matrix, annot=True, fmt='d', cmap='Blues', ax=ax)
-        plt.title('Confusion Matrix for Logistic Regression')
-        plt.xlabel('Predicted')
-        plt.ylabel('Actual')
-        st.pyplot(fig)
-
-        # Initialize the Random Forest and Gradient Boosting models
+        # Display feature importances for Random Forest (if applicable)
         rf_model = RandomForestClassifier(n_estimators=100, random_state=42)
-        gb_model = GradientBoostingClassifier(n_estimators=100, random_state=42)
-
-        # Train the models
         rf_model.fit(X_train, y_train)
-        gb_model.fit(X_train, y_train)
-
-        # Make predictions with both models
-        rf_pred = rf_model.predict(X_test)
-        gb_pred = gb_model.predict(X_test)
-
-        # Evaluate the models
-        rf_accuracy = accuracy_score(y_test, rf_pred)
-        gb_accuracy = accuracy_score(y_test, gb_pred)
-
-        st.write(f'Random Forest Accuracy: {rf_accuracy}')
-        st.write(f'Gradient Boosting Accuracy: {gb_accuracy}')
-
-        # Plot feature importances for Random Forest
         rf_feature_importances = pd.Series(rf_model.feature_importances_, index=X.columns)
         fig, ax = plt.subplots()
         rf_feature_importances.nlargest(3).plot(kind='barh', ax=ax)
         plt.title('Random Forest Feature Importances')
         st.pyplot(fig)
 
-        # Create a voting classifier that combines both models
-        voting_model = VotingClassifier(estimators=[('rf', rf_model), ('gb', gb_model)], voting='soft')
-        voting_model.fit(X_train, y_train)
-        voting_pred = voting_model.predict(X_test)
-
-        # Evaluate the voting model
-        voting_accuracy = accuracy_score(y_test, voting_pred)
-        voting_report = classification_report(y_test, voting_pred, output_dict=True)
-
-        st.write(f'Voting Classifier Accuracy: {voting_accuracy}')
-        st.write(pd.DataFrame(voting_report).transpose())
-
-        # Plot accuracy comparison
-        models = ['Logistic Regression', 'Random Forest', 'Gradient Boosting', 'Voting Classifier']
-        accuracies = [accuracy, rf_accuracy, gb_accuracy, voting_accuracy]
-
-        fig, ax = plt.subplots(figsize=(10, 6))
-        sns.barplot(x=models, y=accuracies, ax=ax)
-        ax.set_title('Model Accuracy Comparison')
-        ax.set_xlabel('Model')
-        ax.set_ylabel('Accuracy')
-        ax.set_ylim(0, 1)
-        st.pyplot(fig)
-
-        # 3D plot of the RAG model with Fear Index
-        fig = plt.figure(figsize=(12, 8))
-        ax = fig.add_subplot(111, projection='3d')
-        colors = news_df['RAG_Status'].map({'Red': 'r', 'Amber': 'orange', 'Green': 'g'}).tolist()
-        ax.scatter(news_df['Polarity'], news_df['Subjectivity'], news_df['Fear_Index'], c=colors, s=50)
-
-        ax.set_xlabel('Polarity')
-        ax.set_ylabel('Subjectivity')
-        ax.set_zlabel('Fear Index')
-        ax.set_title('3D Visualization of RAG Model with Fear Index')
-
-        st.pyplot(fig)
-
-        # Display Fear and Greed Index with icons
-        st.subheader('Fear and Greed Index')
-        avg_fear_index = news_df['Fear_Index'].mean()
-
-        if avg_fear_index >= 7:
-            st.write("Current Market Sentiment: High Fear")
-            display_icon(r"C:\\Users\\redca\\Documents\\GitHub\\LargeEconomicModel\\bear_icon.PNG", width=100)  # Ensure this file exists in your directory
-        elif avg_fear_index >= 4:
-            st.write("Current Market Sentiment: Moderate Fear")
-            display_icon(r"C:\\Users\\redca\\Documents\\GitHub\\LargeEconomicModel\\bear_icon.PNG", width=100)
-        elif avg_fear_index >= 2:
-            st.write("Current Market Sentiment: Neutral")
-        else:
-            st.write("Current Market Sentiment: Greed")
-            display_icon(r"C:\\Users\\redca\\Documents\\GitHub\\LargeEconomicModel\\eagle_icon.PNG", width=100)  # Ensure this file exists in your directory
-
-        # Add interactive components for better user experience
-        st.sidebar.header('User Input Features')
-        selected_model = st.sidebar.selectbox('Select Model', models)
-
-        st.subheader('Prediction Results')
-        if selected_model == 'Logistic Regression':
-            st.write(f'Logistic Regression Accuracy: {accuracy}')
-            st.write(pd.DataFrame(report).transpose())
-        elif selected_model == 'Random Forest':
-            st.write(f'Random Forest Accuracy: {rf_accuracy}')
-            st.write(pd.DataFrame(rf_report).transpose())
-        elif selected_model == 'Gradient Boosting':
-            st.write(f'Gradient Boosting Accuracy: {gb_accuracy}')
-            st.write(pd.DataFrame(gb_report).transpose())
-        else:
-            st.write(f'Voting Classifier Accuracy: {voting_accuracy}')
-            st.write(pd.DataFrame(voting_report).transpose())
-
-        st.subheader('End of Analysis')
-        st.write("Thank you for using the Economic Data Analysis and Sentiment Analysis tool!")
-
-        # Provide download options for the data
-        @st.cache_data
-        def convert_df(df):
-            return df.to_csv(index=False).encode('utf-8')
-
-        csv = convert_df(news_df)
-        st.download_button(
-            label="Download data as CSV",
-            data=csv,
-            file_name='news_sentiment_analysis.csv',
-            mime='text/csv',
-        )
+# End of analysis
+st.subheader("End of Analysis")
