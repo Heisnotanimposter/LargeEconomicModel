@@ -4,7 +4,13 @@ from data_fetcher import fetch_economic_data, scrape_bbc_business_news_rss
 from visualizer import visualize_polarity_distribution, visualize_rag_status_distribution, visualize_fear_index_distribution
 from ml_models import run_ml_models
 from utils import display_icon, calculate_fear_index
+# rag_visualizer.py
+from visualizer import plot_3d_rag_model
 
+# Section for the 3D RAG Model Visualization
+st.sidebar.subheader("RAG Model 3D Settings")
+default_color = st.sidebar.color_picker("Pick Default RAG Color", "#FF0000")
+plot_3d_rag_model(news_df, default_color)
 # Page Configuration
 st.set_page_config(page_title="Economic News & Sentiment Analysis", layout="wide")
 
