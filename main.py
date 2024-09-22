@@ -1,60 +1,132 @@
 import streamlit as st
 import pandas as pd
-from data_fetcher import fetch_economic_data, scrape_bbc_business_news_rss
-from visualizer import visualize_polarity_distribution, visualize_rag_status_distribution, visualize_fear_index_distribution
+from economic_data import fetch_economic_data
+from news_sentiment import scrape_bbc_business_news_rss
+from visualizer import plot_rag_status, plot_fear_index, plot_3d_rag_model
 from ml_models import run_ml_models
-from utils import display_icon, calculate_fear_index
-# rag_visualizer.py
-from visualizer import plot_3d_rag_model
 
-# Section for the 3D RAG Model Visualization
-st.sidebar.subheader("RAG Model 3D Settings")
-default_color = st.sidebar.color_picker("Pick Default RAG Color", "#FF0000")
-plot_3d_rag_model(news_df, default_color)
-# Page Configuration
-st.set_page_config(page_title="Economic News & Sentiment Analysis", layout="wide")
+# Configure the Streamlit page with a more informative description
+st.set_page_config(
+    page_title="Economic Data & Sentiment Analysis",
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
 
-# Title and description
-st.title("🌐 Economic Data & Sentiment Analysis")
-st.markdown("Analyze the economic indicators and sentiment analysis from BBC News with AI-powered models.")
+# Set a custom CSS style for improved readability
+st.markdown("""
+    <style>
+    .main {
+        background-color: #f8f9fa;
+    }
+    .sidebar .sidebar-content {
+        background-color: #f1f1f1;
+        border-radius: 5px;
+        padding: 15px;
+    }
+    h1, h2, h3 {
+        font-family: 'Arial', sans-serif;
+    }
+    .st-dp {
+        border-radius: 10px;
+        padding: 15px;
+    }
+    </style>
+""", unsafe_allow_html=True)
 
-# Sidebar for selecting economic indicators
-urls = {
-    "GDP": "https://tradingeconomics.com/country-list/gdp",
-    "Inflation Rate": "https://tradingeconomics.com/country-list/inflation-rate",
-    "Unemployment Rate": "https://tradingeconomics.com/country-list/unemployment-rate",
-    "Interest Rate": "https://tradingeconomics.com/country-list/interest-rate",
-    "Government Debt": "https://tradingeconomics.com/country-list/government-debt-to-gdp",
-}
-table_class = "table table-hover table-heatmap"
+# Header Section
+st.title("🌍 Economic Data & Market Sentiment Analysis")
+st.write(
+    """
+    Welcome to the Economic Data Analysis dashboard. Here, you can explore key economic indicators, 
+    analyze sentiment from global business news, and gain insights into market trends with AI-powered 
+    models. Use the sidebar to navigate and customize your analysis.
+    """
+)
 
+# Sidebar for user interaction
+st.sidebar.header("Select Analysis")
+
+# Section 1: Fetch Economic Data (GDP, Inflation, Unemployment, etc.)
 st.sidebar.subheader("Select Economic Indicator to Display")
-selected_indicator = st.sidebar.selectbox("Choose an Indicator", list(urls.keys()))
+selected_indicator = st.sidebar.selectbox("Choose an Indicator", ["GDP", "Inflation Rate", "Unemployment Rate", "Interest Rate", "Government Debt"])
 
-if selected_indicator:
-    df = fetch_economic_data(urls[selected_indicator], table_class)
-    if df is not None:
-        st.subheader(f"📊 {selected_indicator} Data")
-        st.write(df.head())
+# Fetch and display the selected economic indicator
+st.subheader(f"📊 {selected_indicator} Data")
+st.write("Visualizing key economic indicators for comprehensive analysis.")
+economic_data = fetch_economic_data(selected_indicator)
+if economic_data is not None:
+    st.write(economic_data.head())
+else:
+    st.error(f"Failed to load data for {selected_indicator}. Please try again.")
 
-# Fetch news data and visualize sentiment
+# Section 2: BBC News Sentiment Analysis
+st.sidebar.subheader("News Sentiment Analysis")
+st.write("Analyzing market sentiment based on headlines from BBC Business News.")
+
+# Scrape news headlines and analyze sentiment
 news_df = scrape_bbc_business_news_rss()
 if not news_df.empty:
+    st.subheader("📰 BBC News Headlines Sentiment Analysis")
+    st.write("Analyzed sentiment from the latest BBC Business News articles.")
     st.write(news_df.head())
-    
-    # Visualize sentiment and indices
-    visualize_polarity_distribution(news_df)
-    visualize_rag_status_distribution(news_df)
-    visualize_fear_index_distribution(news_df)
 
-    # Run machine learning models
+    # Sentiment polarity distribution visualization
+    st.subheader("Sentiment Polarity Distribution")
+    st.write("This chart shows the distribution of sentiment polarity across the collected headlines.")
+    plot_rag_status(news_df)
+
+    # Fear Index visualization
+    st.subheader("Fear Index Distribution")
+    st.write(
+        """
+        The Fear Index quantifies the level of concern in the market. Higher values indicate a stronger
+        fear sentiment, which could signal market instability.
+        """
+    )
+    plot_fear_index(news_df)
+
+    # 3D RAG Model Visualization (User-Controlled)
+    st.sidebar.subheader("3D RAG Model Settings")
+    color_choice = st.sidebar.color_picker("Select Color Scheme", "#FF6347")
+    st.subheader("3D Visualization of Market Sentiment with Fear Index")
+    plot_3d_rag_model(news_df, color_choice)
+
+    # Section 3: Run AI-powered Machine Learning Models
+    st.subheader("AI-Powered Sentiment Prediction")
+    st.write(
+        """
+        Here we run various machine learning models to predict market sentiment based on
+        historical data and trends. You can compare the performance of different models
+        such as Logistic Regression, Random Forest, and Gradient Boosting.
+        """
+    )
     run_ml_models(news_df)
+else:
+    st.warning("No news data available for sentiment analysis. Please try again later.")
 
-    # Display fear and greed index
-    avg_fear_index = news_df['Fear_Index'].mean()
-    if avg_fear_index >= 7:
-        st.write("Current Market Sentiment: High Fear")
-        display_icon("bear_icon.jpg", width=100)
-    else:
-        st.write("Current Market Sentiment: Greed")
-        display_icon("eagle_icon.jpg", width=100)
+# Footer Section with Download Option
+st.subheader("Download Data")
+st.write(
+    """
+    You can download the analyzed sentiment data as a CSV file for further analysis. 
+    Use it to keep track of market sentiment and make informed decisions.
+    """
+)
+
+# Provide download option for sentiment data
+@st.cache_data
+def convert_df_to_csv(df):
+    return df.to_csv(index=False).encode('utf-8')
+
+if not news_df.empty:
+    csv_data = convert_df_to_csv(news_df)
+    st.download_button(
+        label="Download Sentiment Data as CSV",
+        data=csv_data,
+        file_name='news_sentiment_analysis.csv',
+        mime='text/csv'
+    )
+
+# End of Analysis
+st.subheader("Thank you for using the Economic Data & Market Sentiment Analysis Tool!")
+st.write("Stay informed and make data-driven decisions for better financial outcomes.")
