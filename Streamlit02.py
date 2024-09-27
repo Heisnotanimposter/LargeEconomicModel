@@ -188,7 +188,40 @@ if not news_df.empty:
     st.subheader("🧭 Time-based 3D Interactive Visualization")
     
     color_scheme = st.sidebar.selectbox("Select Color Scheme", ['Viridis', 'Plasma', 'Cividis', 'Inferno'])
-    z_values = news_df['Fear_Index'].values
+    # Example data for z-axis
+    z_values = news_df['Fear_Index']
+    
+    # Define fig_3d before updating layout
+    fig_3d = go.Figure(data=[go.Scatter3d(
+        x=news_df['Polarity'],
+        y=news_df['Subjectivity'],
+        z=z_values,
+        mode='markers',
+        marker=dict(
+            size=10,
+            color=z_values,
+            colorscale='Viridis',  # You can modify the color scale here
+            opacity=0.8
+        )
+    )])
+    
+    # Now you can update the layout for fig_3d
+    fig_3d.update_layout(
+        title="3D Interactive Visualization of Sentiment Analysis",
+        scene=dict(
+            xaxis_title="Polarity",
+            yaxis_title="Subjectivity",
+            zaxis_title="Fear Index",
+            xaxis=dict(backgroundcolor="rgb(200, 200, 230)", gridcolor="white"),
+            yaxis=dict(backgroundcolor="rgb(230, 200,230)", gridcolor="white"),
+            zaxis=dict(backgroundcolor="rgb(230, 230,200)", gridcolor="white"),
+        ),
+        margin=dict(l=0, r=0, b=0, t=40),
+        hovermode="closest",
+    )
+    
+    # Display the 3D plot in Streamlit
+    st.plotly_chart(fig_3d, use_container_width=True)
     
     fig_3d.update_layout(
         title="3D Interactive Visualization of Sentiment Analysis",
