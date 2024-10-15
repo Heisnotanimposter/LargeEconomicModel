@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
 import plotly.graph_objects as go
-from ml_models import train_models, evaluate_models
+from ml_models import run_ml_models
 from news_sentiment import scrape_bbc_news_sentiment, calculate_fear_index
 from economic_data import fetch_economic_data
 from visualizer import plot_3d_rag_model
