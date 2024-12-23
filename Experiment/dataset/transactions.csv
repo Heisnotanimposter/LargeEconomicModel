@@ -1,0 +1,2 @@
+transaction_id,token_id,from_id,to_id,amount,category,description,timestamp
+INIT001,T001,"central_bank",I001,0.1,initial_distribution,"Initial allocation to I001","2024-12-10 09:00:00"
