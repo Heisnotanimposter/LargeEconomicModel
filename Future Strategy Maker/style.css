@@ -1,0 +1,20 @@
+/* Basic styles for the calendar */
+body {
+  font-family: Arial, sans-serif;
+}
+#calendar-container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  flex-wrap: wrap;
+}
+.event-box {
+  border: 1px solid #ccc;
+  padding: 10px;
+  margin: 5px;
+  cursor: move;
+}
+.completed {
+  text-decoration: line-through;
+}
