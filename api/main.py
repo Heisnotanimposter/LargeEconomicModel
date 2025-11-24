@@ -2,7 +2,8 @@
 Economic Data API - Main Application
 Provides comprehensive economic data from multiple sources including FRED, World Bank, OECD, and IMF
 """
-from fastapi import FastAPI, HTTPException, Depends, Query, Request
+from fastapi import FastAPI, HTTPException, Depends, Query
+from starlette.requests import Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from typing import Optional, List
