@@ -1,0 +1,77 @@
+version: '3.8'
+
+services:
+  # Economic Data API
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: economic-data-api
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/economic_data
+      - REDIS_URL=redis://redis:6379/0
+    depends_on:
+      - db
+      - redis
+    volumes:
+      - ./api:/app/api
+    restart: unless-stopped
+    networks:
+      - economic-api-network
+
+  # PostgreSQL Database
+  db:
+    image: postgres:16-alpine
+    container_name: economic-data-db
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=economic_data
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    restart: unless-stopped
+    networks:
+      - economic-api-network
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: economic-data-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+    networks:
+      - economic-api-network
+    command: redis-server --appendonly yes
+
+  # Nginx Reverse Proxy (Optional)
+  nginx:
+    image: nginx:alpine
+    container_name: economic-data-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - api
+    restart: unless-stopped
+    networks:
+      - economic-api-network
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  economic-api-network:
+    driver: bridge
+
