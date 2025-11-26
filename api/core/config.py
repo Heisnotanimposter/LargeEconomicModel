@@ -40,6 +40,7 @@ class Settings(BaseSettings):
     ENABLE_AUTH: bool = False
     API_KEY_NAME: str = "X-API-Key"
     API_KEYS: List[str] = []  # Add your API keys here
+    # WARNING: Change this secret key in production!
     SECRET_KEY: str = "your-secret-key-change-this-in-production"
     
     # Rate Limiting

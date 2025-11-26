@@ -5,6 +5,7 @@ Provides comprehensive economic data from multiple sources including FRED, World
 from fastapi import FastAPI, HTTPException, Depends, Query
 from starlette.requests import Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from fastapi.responses import JSONResponse
 from typing import Optional, List
 import time
@@ -79,6 +80,12 @@ app = FastAPI(
     lifespan=lifespan
 )
 
+# Add TrustedHost middleware
+app.add_middleware(
+    TrustedHostMiddleware, 
+    allowed_hosts=settings.ALLOWED_HOSTS if hasattr(settings, "ALLOWED_HOSTS") else ["*"]
+)
+
 # Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
@@ -87,6 +94,17 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Add Security Headers Middleware
+@app.middleware("http")
+async def add_security_headers(request: Request, call_next):
+    response = await call_next(request)
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["X-XSS-Protection"] = "1; mode=block"
+    response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
+    response.headers["Content-Security-Policy"] = "default-src 'self'"
+    return response
 
 # Add custom middleware
 if settings.ENABLE_RATE_LIMITING:
@@ -214,11 +232,12 @@ async def http_exception_handler(request: Request, exc: HTTPException):
 async def general_exception_handler(request: Request, exc: Exception):
     """General exception handler"""
     logger.error(f"Unhandled exception: {exc}", exc_info=True)
+    # Do not leak internal error details in production
     return JSONResponse(
         status_code=500,
         content={
             "error": "Internal server error",
-            "message": str(exc),
+            "message": "An unexpected error occurred. Please contact support.",
             "status_code": 500,
             "timestamp": time.time()
         }

@@ -37,6 +37,21 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
                 if current_time - req_time < self.window_size
             ]
             
+            # Periodic cleanup of all clients to prevent memory leaks
+            # Trigger cleanup if we have too many clients tracked
+            if len(self.requests) > 1000:
+                clients_to_remove = []
+                for cid, reqs in self.requests.items():
+                    # Filter valid requests
+                    valid_reqs = [t for t in reqs if current_time - t < self.window_size]
+                    if not valid_reqs:
+                        clients_to_remove.append(cid)
+                    else:
+                        self.requests[cid] = valid_reqs
+                
+                for cid in clients_to_remove:
+                    del self.requests[cid]
+            
             # Check rate limit
             if len(self.requests[client_id]) >= self.requests_per_minute:
                 return JSONResponse(

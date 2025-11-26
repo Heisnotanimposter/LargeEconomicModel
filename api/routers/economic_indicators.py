@@ -18,7 +18,7 @@ router = APIRouter()
 @router.get("/{indicator}", response_model=EconomicIndicatorResponse)
 async def get_economic_indicator(
     indicator: str,
-    country: str = Query(..., description="Country code (ISO 3166-1 alpha-3, e.g., USA, GBR, DEU)"),
+    country: str = Query(..., min_length=3, max_length=3, pattern="^[A-Z]{3}$", description="Country code (ISO 3166-1 alpha-3, e.g., USA, GBR, DEU)"),
     start_date: Optional[date] = Query(None, description="Start date (YYYY-MM-DD)"),
     end_date: Optional[date] = Query(None, description="End date (YYYY-MM-DD)"),
     source: DataSource = Query(DataSource.ALL, description="Preferred data source")
@@ -69,7 +69,7 @@ async def get_economic_indicator(
         
     except Exception as e:
         logger.error(f"Error fetching indicator {indicator} for {country}: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="An error occurred while fetching the indicator data.")
 
 @router.get("/", response_model=Dict)
 async def list_indicators():
@@ -142,7 +142,7 @@ async def compare_indicators(request: ComparisonRequest):
         raise
     except Exception as e:
         logger.error(f"Error comparing indicators: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="An error occurred while comparing indicators.")
 
 @router.get("/categories/list", response_model=Dict)
 async def list_indicator_categories():
