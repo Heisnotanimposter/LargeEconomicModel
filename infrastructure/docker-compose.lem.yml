@@ -1,0 +1,70 @@
+# LEM - Large Economic Model Infrastructure
+# Docker Compose for web-lem, api-lem, Redis, Nginx
+
+version: "3.8"
+
+services:
+  api-lem:
+    build:
+      context: ..
+      dockerfile: infrastructure/Dockerfile.api-lem
+    container_name: lem-engine
+    ports:
+      - "8000:8000"
+    env_file: ../.env
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+      - DATABASE_URL=sqlite:///./lem_engine.db
+    depends_on:
+      - redis
+    volumes:
+      - ../api-lem:/app/api-lem
+      - ../api:/app/api
+    networks:
+      - lem-network
+
+  web-lem:
+    build:
+      context: ..
+      dockerfile: infrastructure/Dockerfile.web-lem
+    container_name: lem-command-center
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://api-lem:8000
+    depends_on:
+      - api-lem
+    networks:
+      - lem-network
+
+  redis:
+    image: redis:7-alpine
+    container_name: lem-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - lem-network
+
+  nginx:
+    image: nginx:alpine
+    container_name: lem-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.lem.conf:/etc/nginx/nginx.conf:ro
+      - ./ssl:/etc/nginx/ssl:ro
+    depends_on:
+      - api-lem
+      - web-lem
+    networks:
+      - lem-network
+
+volumes:
+  redis_data:
+
+networks:
+  lem-network:
+    driver: bridge
