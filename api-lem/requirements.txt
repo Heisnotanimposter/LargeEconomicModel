@@ -1,0 +1,11 @@
+# LEM Engine - Industrial-grade Economic API
+fastapi>=0.109.0
+uvicorn[standard]>=0.27.0
+orjson>=3.9.0
+uvloop>=0.19.0; sys_platform != "win32"
+redis>=5.0.0
+pydantic>=2.0.0
+pydantic-settings>=2.1.0
+sqlalchemy>=2.0.0
+aiohttp>=3.9.0
+requests>=2.31.0
