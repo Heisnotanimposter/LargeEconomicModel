@@ -23,7 +23,7 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
     
     async def dispatch(self, request: Request, call_next):
         # Get client identifier (IP address or API key)
-        client_id = request.client.host
+        client_id = request.client.host if request.client else "unknown-client"
         api_key = request.headers.get("X-API-Key")
         if api_key:
             client_id = api_key
