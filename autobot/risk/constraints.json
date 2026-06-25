@@ -1,0 +1,11 @@
+{
+    "min_order_usd": 1.0,
+    "max_orders_per_minute": 2,
+    "allowed_symbols": ["BTC-USDT", "ETH-USDT"],
+    "max_daily_loss_usd": 2.0,
+    "max_position_pct": 0.1,
+    "max_order_size": 0.01,
+    "slippage_limit_pct": 0.005,
+    "data_stale_sec": 5,
+    "missing_rate_threshold": 0.05
+}
