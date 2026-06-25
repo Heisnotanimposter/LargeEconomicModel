@@ -12,7 +12,7 @@ import time
 from contextlib import asynccontextmanager
 import logging
 
-from api.routers import economic_indicators, countries, markets, analytics
+from api.routers import economic_indicators, countries, markets, analytics, marketing
 from api.core.config import settings
 from api.core.database import init_db
 from api.middleware.rate_limit import RateLimitMiddleware
@@ -133,6 +133,11 @@ app.include_router(
     analytics.router,
     prefix="/api/v1/analytics",
     tags=["Analytics"]
+)
+app.include_router(
+    marketing.router,
+    prefix="/api/v1/marketing",
+    tags=["Marketing Team"]
 )
 
 @app.get("/", tags=["Root"])
