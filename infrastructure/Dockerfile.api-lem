@@ -1,0 +1,26 @@
+# LEM Engine - FastAPI with uvloop, ORJSON
+FROM python:3.11-slim
+
+WORKDIR /app
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PIP_NO_CACHE_DIR=1
+
+RUN apt-get update && apt-get install -y --no-install-recommends gcc \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY api-lem/requirements.txt api-lem/
+COPY requirements/api_requirements.txt . 2>/dev/null || true
+RUN pip install --upgrade pip \
+    && pip install -r api-lem/requirements.txt \
+    && (pip install -r api_requirements.txt 2>/dev/null || pip install fastapi uvicorn sqlalchemy pydantic pydantic-settings aiohttp requests)
+
+COPY api-lem/ api-lem/
+COPY api/ api/
+
+ENV PYTHONPATH=/app
+
+EXPOSE 8000
+
+CMD ["uvicorn", "api_lem.main:app", "--host", "0.0.0.0", "--port", "8000"]
