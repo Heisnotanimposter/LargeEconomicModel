@@ -1,0 +1,32 @@
+{
+  "low_income_profile": {
+    "Social Security": 0.20,
+    "National Defense": 0.05,
+    "Health": 0.20,
+    "Net Interest": 0.05,
+    "Medicare": 0.10,
+    "Income Security": 0.20,
+    "Veterans Benefits and Services": 0.05,
+    "Education,Training,Employment,and Social Services": 0.15
+  },
+  "medium_income_profile": {
+    "Social Security": 0.18,
+    "National Defense": 0.10,
+    "Health": 0.15,
+    "Net Interest": 0.10,
+    "Medicare": 0.12,
+    "Income Security": 0.10,
+    "Veterans Benefits and Services": 0.05,
+    "Education,Training,Employment,and Social Services": 0.20
+  },
+  "high_income_profile": {
+    "Social Security": 0.15,
+    "National Defense": 0.15,
+    "Health": 0.10,
+    "Net Interest": 0.15,
+    "Medicare": 0.10,
+    "Income Security": 0.05,
+    "Veterans Benefits and Services": 0.05,
+    "Education,Training,Employment,and Social Services": 0.25
+  }
+}
