@@ -1,0 +1,6 @@
+individual_id,income_bracket,demographic_info,spending_profile_reference
+I001,low,"age:30;region:urban;household_size:2","low_income_profile"
+I002,medium,"age:45;region:suburban;household_size:3","medium_income_profile"
+I003,medium,"age:50;region:rural;household_size:4","medium_income_profile"
+I004,high,"age:60;region:urban;household_size:1","high_income_profile"
+I005,low,"age:25;region:urban;household_size:1","low_income_profile"
