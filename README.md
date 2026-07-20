@@ -65,9 +65,9 @@ git clone https://github.com/yourusername/LargeEconomicModel.git
 cd LargeEconomicModel
 
 # Start the API (automated script)
-./start_api.sh  # On Linux/Mac
+./scripts/start_api.sh  # On Linux/Mac
 # or
-start_api.bat   # On Windows
+scripts/start_api.bat   # On Windows
 
 # API will be available at:
 # - Main: http://localhost:8000
@@ -96,12 +96,12 @@ docker-compose up -d
 pip install -r requirements.txt
 
 # Run the main Streamlit app
-streamlit run Streamlit03.py
+streamlit run legacy/Streamlit03.py
 ```
 
 ## 📚 Documentation
 
-- **[API Documentation](API_README.md)** - Complete guide for the Economic Data API
+- **[API Documentation](docs/API_README.md)** - Complete guide for the Economic Data API
 - **[API Reference](http://localhost:8000/docs)** - Interactive API documentation (when running)
 - **[Examples](examples/)** - Code examples in Python and other languages
 
@@ -167,25 +167,33 @@ analytics = response.json()
 
 ```
 LargeEconomicModel/
-├── api/                          # Economic Data API (Primary)
-│   ├── main.py                   # FastAPI application
-│   ├── core/                     # Core configurations
-│   ├── models/                   # Data models
-│   ├── providers/                # Data source providers
-│   ├── routers/                  # API endpoints
-│   └── middleware/               # Auth & rate limiting
+├── api/                          # Economic Data API (Primary Backend)
+├── api-lem/                      # LEM FastAPI Engine wrapper (production)
+├── web-lem/                      # Next.js frontend Command Center
 ├── examples/                     # Usage examples
-│   └── python_examples.py
-├── tests/                        # API tests
-├── EconomicNewsCrawler/         # News crawler tools
-├── News Sentiment Analysis/      # Sentiment analysis
-├── OECDdatasets/                # OECD data tools
-├── Experiment/                  # Experimental features
-├── docker-compose.yml           # Docker configuration
-├── api_requirements.txt         # API dependencies
-├── requirements.txt             # Legacy app dependencies
-├── start_api.sh                 # API startup script
-└── API_README.md               # Detailed API docs
+├── tests/                        # Tests (API & visualizer tests)
+├── docs/                         # Documentation
+│   ├── API_README.md             # Detailed API docs
+│   ├── QUICKSTART.md             # Quick start guide
+│   └── ...
+├── infrastructure/               # Docker & Nginx configurations
+│   ├── docker-compose.yml        # PostgreSQL + API container stack
+│   ├── Dockerfile.api            # Docker configuration for API
+│   ├── docker-compose.lem.yml    # Combined LEM stack
+│   └── ...
+├── scripts/                      # Startup scripts
+│   ├── start_api.sh              # Linux/Mac startup
+│   └── start_api.bat             # Windows startup
+├── requirements/                 # Dependency lists
+│   ├── api_requirements.txt      # API dependencies
+│   └── legacy_requirements.txt   # Legacy dashboard dependencies
+├── legacy/                       # Legacy dashboards, models & crawlers (Streamlit)
+│   ├── Streamlit03.py            # Legacy Streamlit App
+│   ├── EconomicNewsCrawler/      # News crawler tools
+│   └── ...
+├── autobot/                      # Autonomous trading agent system
+├── marketpulse/                  # Vite + React AI Studio dashboard
+└── ralph-loop-agent/             # Experimental agent loop package
 ```
 
 ## 📦 Installation
@@ -197,12 +205,12 @@ LargeEconomicModel/
 
 ### Install API Dependencies
 ```bash
-pip install -r api_requirements.txt
+pip install -r requirements/api_requirements.txt
 ```
 
 ### Install Legacy App Dependencies
 ```bash
-pip install -r requirements.txt
+pip install -r requirements/legacy_requirements.txt
 ```
 
 ## ⚙️ Configuration
