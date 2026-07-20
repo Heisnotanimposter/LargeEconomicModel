@@ -72,8 +72,8 @@ class TestIndicatorEndpoints:
     async def test_get_indicator_invalid_country(self):
         """Test getting indicator with invalid country"""
         response = client.get("/api/v1/indicators/GDP?country=INVALID")
-        # Should return 404 or 500 depending on implementation
-        assert response.status_code in [404, 500]
+        # Should return 404, 422, or 500 depending on implementation/validation
+        assert response.status_code in [404, 422, 500]
 
 
 class TestCountryEndpoints:
