@@ -1,0 +1,44 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* LEM-Dark Theme - Obsidian Black, Pure White, Silver Gray */
+:root {
+  --lem-obsidian: #0a0a0a;
+  --lem-white: #ffffff;
+  --lem-silver: #a1a1aa;
+  --lem-silver-muted: #71717a;
+  --background: var(--lem-obsidian);
+  --foreground: var(--lem-white);
+  --muted: var(--lem-silver);
+  --chart-fill: rgba(255, 255, 255, 0.1);
+  --chart-line: 1px;
+}
+
+body {
+  color: var(--foreground);
+  background: var(--background);
+  font-family: var(--font-geist-sans), system-ui, sans-serif;
+}
+
+.font-mono-data {
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Sharp-edged components (no rounded corners) */
+.lem-card {
+  @apply border border-[var(--lem-silver-muted)] bg-[var(--lem-obsidian)] p-4;
+  border-radius: 0;
+}
+
+.lem-input {
+  @apply border border-[var(--lem-silver-muted)] bg-transparent px-3 py-2 text-[var(--lem-white)];
+  border-radius: 0;
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
